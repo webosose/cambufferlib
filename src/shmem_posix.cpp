@@ -49,11 +49,11 @@ bool PosixSharedMemory::Close() {
     return true;
 }
 
-bool PosixSharedMemory::ReadData(uint8_t** buffer, size_t* len) {
+bool PosixSharedMemory::ReadData(uint8_t** buffer, int* len) {
     if (!buffer || !len)
         return false;
 
-    if (ReadPosixShmem(phShmem_, buffer, reinterpret_cast<int*>(len)) != SHMEM_COMM_OK)
+    if (ReadPosixShmem(phShmem_, buffer, len) != SHMEM_COMM_OK)
       return false;
     return true;
 }

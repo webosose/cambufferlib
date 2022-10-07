@@ -34,7 +34,7 @@ public:
     virtual bool Open(key_t shmemKey) = 0;
     virtual bool Create(key_t* shmemKey, const int unitSize, const int units) = 0;
     virtual bool Close() = 0;
-    virtual bool ReadData(uint8_t** buffer, size_t* len) = 0;
+    virtual bool ReadData(uint8_t** buffer, int* len) = 0;
     virtual bool WriteData(uint8_t* buffer, const size_t len) = 0;
 
 protected:

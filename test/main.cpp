@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
 
     do {
         uint8_t* pBuf = nullptr;
-        size_t len = 0;
+        int len = 0;
 
 #ifdef DEBUG
         auto start = high_resolution_clock::now();

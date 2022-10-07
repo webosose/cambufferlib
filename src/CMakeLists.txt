@@ -26,6 +26,8 @@ file(GLOB PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include/public/*.h)
 
 add_library(${PROJECT_NAME} SHARED ${SRC_LIST})
 
+target_link_libraries(${PROJECT_NAME} rt)
+
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
         VERSION 1.0 SOVERSION 1

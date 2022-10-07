@@ -58,11 +58,11 @@ bool SystemvSharedMemory::Close() {
     return true;
 }
 
-bool SystemvSharedMemory::ReadData(uint8_t** buffer, size_t* len) {
+bool SystemvSharedMemory::ReadData(uint8_t** buffer, int* len) {
     if (!buffer || !len)
         return false;
 
-    if (ReadShmem(phShmem_, buffer, reinterpret_cast<int*>(len)) != SHMEM_COMM_OK)
+    if (ReadShmem(phShmem_, buffer, len) != SHMEM_COMM_OK)
         return false;
     return true;
 }

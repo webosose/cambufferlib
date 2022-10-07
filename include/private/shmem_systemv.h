@@ -29,7 +29,7 @@ public:
     virtual bool Open(key_t shmemKey);
     virtual bool Create(key_t* shmemKey, const int unitSize, const int units);
     virtual bool Close();
-    virtual bool ReadData(uint8_t** buffer, size_t* len);
+    virtual bool ReadData(uint8_t** buffer, int* len);
     virtual bool WriteData(uint8_t* buffer, const size_t len);
 };
 

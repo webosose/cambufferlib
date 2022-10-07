@@ -36,7 +36,7 @@ public:
     bool Open(key_t shmemKey);
     bool Create(key_t* shmemKey, const int unitSize, const int units);
     bool Close();
-    bool ReadData(uint8_t** buffer, size_t* len);
+    bool ReadData(uint8_t** buffer, int* len);
     bool WriteData(uint8_t* buffer, const size_t len);
 
 private:

@@ -70,7 +70,7 @@ bool CameraBuffer::Close() {
     return status;
 }
 
-bool CameraBuffer::ReadData(uint8_t** buffer, size_t* len) {
+bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
     if (!isInitialized_)
         return false;
 
