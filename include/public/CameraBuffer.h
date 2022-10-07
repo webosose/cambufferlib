@@ -17,7 +17,8 @@
 #ifndef WEBOS_CAMERA_BUFFER_LIB_INTERFACE_H_
 #define WEBOS_CAMERA_BUFFER_LIB_INTERFACE_H_
 
-#include <memory>
+#include <inttypes.h>
+#include <sys/shm.h>
 
 namespace camera {
 
