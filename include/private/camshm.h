@@ -17,16 +17,7 @@
 #ifndef MEDIA_CAPTURE_VIDEO_WEBOS_CAMSHM_H_
 #define MEDIA_CAPTURE_VIDEO_WEBOS_CAMSHM_H_
 
-typedef enum _SHMEM_STATUS_T {
-  SHMEM_COMM_OK = 0x0,
-  SHMEM_COMM_FAIL = -1,
-  SHMEM_COMM_OVERFLOW = -2,
-  SHMEM_COMM_NODATA = -3,
-  SHMEM_COMM_TERMINATE = -4,
-  SHMEM_COMM_SIZE = -5,
-} SHMEM_STATUS_T;
-
-typedef void* SHMEM_HANDLE;
+#include "definitions.h"
 
 extern SHMEM_STATUS_T CreateShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey,
                                   int unitSize, int unitNum);

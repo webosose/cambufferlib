@@ -42,66 +42,6 @@
 
 #include "cam_posixshm.h"
 
-#ifdef SHMEM_COMM_DEBUG
-#define DEBUG_PRINT(fmt, args...) printf("\x1b[1;40;32m[SHM_API:%s] " fmt "\x1b[0m\r\n", __FUNCTION__, ##args)
-#else
-#define DEBUG_PRINT(fmt, args...)
-#endif
-
-// constants
-
-#define SHMEM_HEADER_SIZE (5 * sizeof(int))
-#define SHMEM_LENGTH_SIZE sizeof(int)
-
-enum
-{
-    MODE_OPEN,
-    MODE_CREATE
-};
-
-enum
-{
-    READ_FIRST,
-    READ_LAST
-};
-
-// structure define
-
-typedef enum _SHMEM_MARK_T
-{
-    SHMEM_COMM_MARK_NORMAL    = 0x0,
-    SHMEM_COMM_MARK_RESET     = 0x1,
-    SHMEM_COMM_MARK_TERMINATE = 0x2
-} SHMEM_MARK_T;
-
-/* shared memory structure
-   4 bytes          : write_index
-   4 bytes          : read_index
-   4 bytes          : unit_size
-   4 bytes          : unit_num
-   4 bytes          : mark
-   4 bytes  *unit_num : length data
-   unit_size*unit_num : data
-   4 bytes         : extra_size
-   extra_size*unit_num : extra data
-   */
-
-typedef struct _SHMEM_COMM_T
-{
-    /*shared memory overhead*/
-    int *write_index;
-    int *read_index;
-    int *unit_size;
-    int *unit_num;
-    SHMEM_MARK_T *mark;
-
-    unsigned int *length_buf;
-    unsigned char *data_buf;
-
-    int *extra_size;
-    unsigned char *extra_buf;
-} SHMEM_COMM_T;
-
 SHMEM_STATUS_T _OpenPosixShmem(SHMEM_HANDLE *phShmem, int fd, int unitSize, int unitNum,
         int extraSize, int nOpenMode);
 SHMEM_STATUS_T _ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,

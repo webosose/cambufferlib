@@ -74,8 +74,11 @@ bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
     if (!isInitialized_)
         return false;
 
+    if (len == nullptr)
+        return false;
+
     // initialize the length parameter
-    if (len) *len = 0;
+    *len = 0;
 
     int signum;
     sigset_t sigset;
