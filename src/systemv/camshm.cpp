@@ -1,4 +1,4 @@
-// Copyright (c) 2022 LG Electronics, Inc.
+// Copyright (c) 2022-2023 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -124,6 +124,10 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
 
   *phShmem = (SHMEM_HANDLE)malloc(sizeof(SHMEM_COMM_T));
   pShmemBuffer = (SHMEM_COMM_T *)*phShmem;
+  if (pShmemBuffer == NULL) {
+    DEBUG_PRINT("failed creating memory for handle");
+    return SHMEM_COMM_FAIL;
+  }
 
   DEBUG_PRINT("hShmem = %p, pKey = %p, nOpenMode=%d, unitSize=%d, unitNum=%d\n",
               *phShmem, pShmemKey, nOpenMode, unitSize, unitNum);

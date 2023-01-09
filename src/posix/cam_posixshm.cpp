@@ -1,4 +1,4 @@
-// Copyright (c) 2022 LG Electronics, Inc.
+// Copyright (c) 2022-2023 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,6 +64,10 @@ SHMEM_STATUS_T _OpenPosixShmem(SHMEM_HANDLE *phShmem, int shmfd, int unitSize, i
 
     *phShmem = (SHMEM_HANDLE) malloc(sizeof(SHMEM_COMM_T));
     pShmemBuffer = (SHMEM_COMM_T *) *phShmem;
+    if (pShmemBuffer == NULL) {
+        DEBUG_PRINT("failed creating memory for handle");
+        return SHMEM_COMM_FAIL;
+    }
 
     if( fstat (shmfd , &sb) == -1)
     {
@@ -74,7 +78,7 @@ SHMEM_STATUS_T _OpenPosixShmem(SHMEM_HANDLE *phShmem, int shmfd, int unitSize, i
     DEBUG_PRINT("shared memory opened successfully!\n");
 
     pSharedmem = (unsigned char *)mmap(0, shmemSize, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
-    if(pSharedmem == MAP_FAILED)
+    if(pSharedmem == MAP_FAILED || pSharedmem == NULL)
     {
         DEBUG_PRINT("mmap failed \n");
         return SHMEM_COMM_FAIL;
