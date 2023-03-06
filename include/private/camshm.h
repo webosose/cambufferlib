@@ -1,4 +1,4 @@
-// Copyright (c) 2022 LG Electronics, Inc.
+// Copyright (c) 2023 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,26 +19,25 @@
 
 #include "definitions.h"
 
-extern SHMEM_STATUS_T CreateShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey,
-                                  int unitSize, int unitNum);
-extern SHMEM_STATUS_T CreateShmemEx(SHMEM_HANDLE *phShmem, key_t *pShmemKey,
-                                    int unitSize, int unitNum, int extraSize);
+extern SHMEM_STATUS_T CreateShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
+                                  int metaSize, int unitNum);
+extern SHMEM_STATUS_T CreateShmemEx(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
+                                    int metaSize, int unitNum, int extraSize);
 extern SHMEM_STATUS_T OpenShmem(SHMEM_HANDLE *phShmem, key_t shmemKey);
-extern SHMEM_STATUS_T ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData,
-                                int *pSize);
-extern SHMEM_STATUS_T ReadShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData,
-                                  int *pSize, unsigned char **ppExtraData,
-                                  int *pExtraSize);
-extern SHMEM_STATUS_T ReadLastShmem(SHMEM_HANDLE hShmem, unsigned char **ppData,
-                                    int *pSize);
-extern SHMEM_STATUS_T ReadLastShmemEx(SHMEM_HANDLE hShmem,
-                                      unsigned char **ppData, int *pSize,
-                                      unsigned char **ppExtraData,
-                                      int *pExtraSize);
-extern SHMEM_STATUS_T WriteShmem(SHMEM_HANDLE hShmem, unsigned char *pData,
-                                 int dataSize);
-extern SHMEM_STATUS_T WriteShmemEx(SHMEM_HANDLE hShmem, unsigned char *pData,
-                                   int dataSize, unsigned char *pExtraData,
+extern SHMEM_STATUS_T ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+                                unsigned char **ppMeta, int *pMetaSize);
+extern SHMEM_STATUS_T ReadShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+                                  unsigned char **ppMeta, int *pMetaSize,
+                                  unsigned char **ppExtraData, int *pExtraSize);
+extern SHMEM_STATUS_T ReadLastShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+                                    unsigned char **ppMeta, int *pMetaSize);
+extern SHMEM_STATUS_T ReadLastShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+                                      unsigned char **ppMeta, int *pMetaSize,
+                                      unsigned char **ppExtraData, int *pExtraSize);
+extern SHMEM_STATUS_T WriteShmem(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
+                                 unsigned char *pMeta, int metaSize);
+extern SHMEM_STATUS_T WriteShmemEx(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
+                                   unsigned char *pMeta, int metaSize, unsigned char *pExtraData,
                                    int extraDataSize);
 extern SHMEM_STATUS_T CloseShmem(SHMEM_HANDLE *phShmem);
 

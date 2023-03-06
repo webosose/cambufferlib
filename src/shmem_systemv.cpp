@@ -1,4 +1,4 @@
-// Copyright (c) 2022 LG Electronics, Inc.
+// Copyright (c) 2022-2023 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ bool SystemvSharedMemory::Create(key_t* shmemKey, const int unitSize, const int 
     if (phShmem_)
         return true;
 
-    if (CreateShmem(&phShmem_, &shmKey_, unitSize, units) != SHMEM_COMM_OK)
+    if (CreateShmem(&phShmem_, &shmKey_, unitSize, 0, units) != SHMEM_COMM_OK)
         return false;
 
     *shmemKey = shmKey_;
@@ -62,7 +62,7 @@ bool SystemvSharedMemory::ReadData(uint8_t** buffer, int* len) {
     if (!buffer || !len)
         return false;
 
-    if (ReadShmem(phShmem_, buffer, len) != SHMEM_COMM_OK)
+    if (ReadShmem(phShmem_, buffer, len, nullptr, nullptr) != SHMEM_COMM_OK)
         return false;
     return true;
 }
@@ -70,7 +70,7 @@ bool SystemvSharedMemory::ReadData(uint8_t** buffer, int* len) {
 bool SystemvSharedMemory::WriteData(uint8_t* buffer, size_t len) {
     int status = SHMEM_COMM_FAIL;
     if (phShmem_)
-        status = WriteShmem(phShmem_, buffer, len);
+        status = WriteShmem(phShmem_, buffer, len, nullptr, 0);
     return status == SHMEM_COMM_OK;
 }
 
