@@ -35,7 +35,7 @@ typedef void* SHMEM_HANDLE;
 #define DEBUG_PRINT(fmt, args...)
 #endif
 
-#define SHMEM_HEADER_SIZE (5 * sizeof(int))
+#define SHMEM_HEADER_SIZE (6 * sizeof(int))
 #define SHMEM_LENGTH_SIZE sizeof(int)
 
 enum { MODE_OPEN, MODE_CREATE };
