@@ -1,4 +1,4 @@
-# Copyright (c) 2022 LG Electronics, Inc.
+# Copyright (c) 2022-2023 LG Electronics, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ set_target_properties(${PROJECT_NAME}
         PUBLIC_HEADER "${PUBLIC_HEADERS}"
     )
 
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
-install(TARGETS ${PROJECT_NAME} PUBLIC_HEADER DESTINATION include)
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${WEBOS_INSTALL_LIBDIR})
+install(TARGETS ${PROJECT_NAME} PUBLIC_HEADER DESTINATION ${WEBOS_INSTALL_INCLUDEDIR})
 
 #install package config file
 set(PC_FILE "camera-buffer")
