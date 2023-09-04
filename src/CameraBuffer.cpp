@@ -101,19 +101,12 @@ bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
                 read_retry++;
             } while (read_retry <= 100);
         } else if (signum == -1) {
-            int err = errno;
-            if (err == EINTR) {
-                wait_retry++;
-            } else if (err == EAGAIN) {
-                *len = 0;
-                return true;
-            } else {
-                break;
-            }
+            //timeout
+            wait_retry++;
         } else {
             break;
         }
-    } while (wait_retry <= 100);
+    } while (wait_retry <= 10);
 
     return true;
 }
