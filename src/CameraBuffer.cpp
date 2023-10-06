@@ -84,7 +84,9 @@ bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
     sigset_t sigset;
     sigemptyset(&sigset);
     sigaddset(&sigset, SIGUSR1);
-    sigprocmask(SIG_SETMASK, &sigset, nullptr);
+
+    if (sigprocmask(SIG_SETMASK, &sigset, nullptr) == -1)
+        return false;
 
     int wait_retry = 0;
     struct timespec timeout {1, 0};

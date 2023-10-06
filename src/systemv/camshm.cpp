@@ -25,7 +25,7 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <climits>
 #include "camshm.h"
 
 // constants
@@ -112,7 +112,13 @@ int getShmemCount(SHMEM_COMM_T *shmem_buffer)
 
 int increseReadIndex(SHMEM_COMM_T *pShmem_buffer, int lread_index)
 {
-    lread_index += 1;
+    if (lread_index >= INT_MAX)
+        lread_index = INT_MAX;
+    else
+    {
+        lread_index += 1;
+    }
+    DEBUG_PRINT("lread_index = %d\n", lread_index);
     if (lread_index == *pShmem_buffer->unit_num)
     {
         *pShmem_buffer->read_index = 0;
@@ -160,21 +166,37 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
         return SHMEM_COMM_FAIL;
     }
 
-    DEBUG_PRINT("hShmem = %p, pKey = %p, nOpenMode=%d, unitSize=%d, unitNum=%d\n",
-            *phShmem, pShmemKey, nOpenMode, unitSize, unitNum);
-
-    if (nOpenMode == MODE_CREATE)
-    {
+   if (nOpenMode == MODE_CREATE)
+   {
         for (shmemKey = CAMSHKEY; shmemKey < 0xFFFF; shmemKey++)
         {
             pShmemBuffer->shmem_id = shmget((key_t) shmemKey, 0, 0666);
-            if (pShmemBuffer->shmem_id == -1 && errno == ENOENT)
+            if (pShmemBuffer->shmem_id == -1)
                 break;
         }
         *pShmemKey = shmemKey;
-        shmemSize = SHMEM_HEADER_SIZE + (unitSize + SHMEM_LENGTH_SIZE) * unitNum + sizeof(int)
-                + extraSize * unitNum;
-        shmemMode |= IPC_CREAT | IPC_EXCL;
+        if (unitSize < 0 && unitNum < 0)
+        {
+            if (SHMEM_HEADER_SIZE + (unitSize + SHMEM_LENGTH_SIZE) * unitNum + sizeof(int) <= INT_MAX)
+            {
+               if (extraSize >= INT_MAX || unitNum >= INT_MAX)
+                   shmemSize += 0;
+               else
+               {
+                  if (extraSize * unitNum >= INT_MAX || shmemSize >= INT_MAX)
+                      shmemSize += 0;
+                  else
+                  {
+                      shmemSize += extraSize * unitNum;
+                      shmemMode |= IPC_CREAT | IPC_EXCL;
+                  }
+               }
+
+            }
+
+        }
+        else
+            return SHMEM_COMM_FAIL;
     }
     else
     {
@@ -194,6 +216,8 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
     DEBUG_PRINT("shared memory created/opened successfully!\n");
 
     pSharedmem                = (unsigned char *) shmat(pShmemBuffer->shmem_id, NULL, 0);
+    if (pSharedmem == NULL)
+        return SHMEM_COMM_FAIL;
     pShmemBuffer->write_index = (int *) (pSharedmem + sizeof(int) * 0);
     pShmemBuffer->read_index  = (int *) (pSharedmem + sizeof(int) * 1);
     pShmemBuffer->unit_size   = (int *) (pSharedmem + sizeof(int) * 2);
@@ -223,21 +247,74 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
     }
     size_t length_buf_offset = sizeof(int) * 6;
 
-    size_t data_buf_offset = SHMEM_HEADER_SIZE + (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+    size_t data_buf_offset = SHMEM_HEADER_SIZE;
+    if ((*pShmemBuffer->unit_num) >= 0)
+        data_buf_offset += (SHMEM_LENGTH_SIZE);
+    else{
+        if(data_buf_offset < ULONG_MAX && (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) < ULONG_MAX)
+            data_buf_offset += (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+        else
+            data_buf_offset += (SHMEM_LENGTH_SIZE);
+    }
 
-    size_t length_meta_offset =
-        SHMEM_HEADER_SIZE +
-        ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+    size_t length_meta_offset = 0;
+    if ((*pShmemBuffer->unit_size) >= 0)
+    {
+     if ((*pShmemBuffer->unit_size) < ULONG_MAX || SHMEM_LENGTH_SIZE < ULONG_MAX)
+        {
+            if (length_meta_offset < ULONG_MAX && (*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE < ULONG_MAX)
+                length_meta_offset += ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE);
+            if (length_meta_offset < ULONG_MAX && (*pShmemBuffer->unit_num) < ULONG_MAX)
+                length_meta_offset *= (*pShmemBuffer->unit_num);
+            if (length_meta_offset < ULONG_MAX && SHMEM_HEADER_SIZE < ULONG_MAX)
+                length_meta_offset += SHMEM_HEADER_SIZE;
 
-    size_t data_meta_offset =
-        SHMEM_HEADER_SIZE +
-        ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) +
-        (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+        }
+    }
+    DEBUG_PRINT("4");
+
+    size_t data_meta_offset = 0;
+
+    if ((*pShmemBuffer->unit_size) >= ULONG_MAX || SHMEM_LENGTH_SIZE >= ULONG_MAX)
+        data_meta_offset += 0;
+    else{
+        if (((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) >= ULONG_MAX || (*pShmemBuffer->unit_num) >= ULONG_MAX)
+        {
+            if(((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) >= ULONG_MAX)
+                data_meta_offset += 0;
+            else
+            {
+                data_meta_offset += ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE);
+                data_meta_offset *= (*pShmemBuffer->unit_num);
+            }
+        }
+    }
+    if (SHMEM_LENGTH_SIZE < ULONG_MAX || (*pShmemBuffer->unit_num) < ULONG_MAX)
+    {
+        if (data_meta_offset < ULONG_MAX && SHMEM_LENGTH_SIZE * (*pShmemBuffer->unit_num) < ULONG_MAX)
+            data_meta_offset += SHMEM_LENGTH_SIZE * (*pShmemBuffer->unit_num);
+    }
+    if (data_meta_offset < ULONG_MAX && SHMEM_HEADER_SIZE < ULONG_MAX)
+        data_meta_offset += SHMEM_HEADER_SIZE;
 
     size_t extra_size_offset =
         SHMEM_HEADER_SIZE +
-        ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) +
-        ((*pShmemBuffer->meta_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+        ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+    if ((*pShmemBuffer->meta_size) > 0)
+    {
+        if ((*pShmemBuffer->meta_size) < ULONG_MAX && SHMEM_LENGTH_SIZE < ULONG_MAX)
+        {
+            if(((*pShmemBuffer->meta_size) + SHMEM_LENGTH_SIZE) < ULONG_MAX && (*pShmemBuffer->unit_num) < ULONG_MAX)
+            {
+                if((extra_size_offset > 0 && (*pShmemBuffer->meta_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) > 0)
+                    extra_size_offset += ((*pShmemBuffer->meta_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
+            }
+        }
+    }
+    if (SHMEM_HEADER_SIZE > extra_size_offset)
+        return SHMEM_COMM_FAIL;
+    if (*pShmemBuffer->unit_num > extra_size_offset)
+        return SHMEM_COMM_FAIL;
 
     size_t extra_buf_offset =
         SHMEM_HEADER_SIZE +
@@ -258,13 +335,11 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
     if (shmctl(pShmemBuffer->shmem_id, IPC_STAT, &shm_stat) != -1)
     {
 #ifdef SHMEM_COMM_DEBUG
-        DEBUG_PRINT("shm_stat.shm_nattch=%d\n", (int)shm_stat.shm_nattch);
         if (shm_stat.shm_nattch == 1)
             DEBUG_PRINT("we are the first client\n");
 
-        DEBUG_PRINT("shared memory size = %d\n", shm_stat.shm_segsz);
 #endif
-        // shared momory size larger than total, we use extra data
+        // shared memory size larger than total, we use extra data
         if (shm_stat.shm_segsz > extra_size_offset)
         {
             pShmemBuffer->extra_size = (int *)(pSharedmem + extra_size_offset);
@@ -291,8 +366,6 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
 
     resetShmem(pShmemBuffer);
 
-    DEBUG_PRINT("unitSize = %d, SHMEM_LENGTH_SIZE = %d, unit_num = %d\n", *pShmemBuffer->unit_size,
-                SHMEM_LENGTH_SIZE, *pShmemBuffer->unit_num);
     DEBUG_PRINT("shared memory opened successfully! : shmem_id=%d, sema_id=%d\n",
             pShmemBuffer->shmem_id, pShmemBuffer->sema_id);
     return SHMEM_COMM_OK;
@@ -361,6 +434,13 @@ SHMEM_STATUS_T _ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSiz
                 }
                 else
                 {
+                 if(*shmem_buffer->unit_num >= INT_MAX)
+                    lread_index = INT_MAX;
+
+                 if(*shmem_buffer->unit_num - 1 >= INT_MAX)
+                    lread_index = INT_MAX;
+
+                 else
                     lread_index = *shmem_buffer->unit_num - 1;
                 }
             }
@@ -376,22 +456,49 @@ SHMEM_STATUS_T _ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSiz
                 return SHMEM_COMM_SIZE;
             }
 
-            read_addr = shmem_buffer->data_buf + (lread_index) * (*shmem_buffer->unit_size);
+            read_addr = shmem_buffer->data_buf;
+            if (lread_index >= INT_MAX || (*shmem_buffer->unit_size) >= INT_MAX)
+                read_addr += INT_MAX;
+            else
+            {
+               if (((lread_index) * (*shmem_buffer->unit_size)) >= INT_MAX)
+                     read_addr += INT_MAX;
+               else
+                     read_addr += (lread_index) * *(shmem_buffer->unit_size);
+            }
             *ppData   = read_addr;
             *pSize    = size;
 
             if (NULL != ppMeta && NULL != pMetaSize)
             {
                 size       = *(int *)(shmem_buffer->length_meta + lread_index);
-                read_addr  = shmem_buffer->data_meta + (lread_index) * (*shmem_buffer->meta_size);
+                read_addr  = shmem_buffer->data_meta;
+                if (lread_index >= INT_MAX || (*shmem_buffer->meta_size) >= INT_MAX)
+                    read_addr += INT_MAX;
+                else
+                {
+                   if ((lread_index) * (*shmem_buffer->meta_size) >= INT_MAX)
+                        read_addr += INT_MAX;
+                   else
+                       read_addr += (lread_index) * *(shmem_buffer->meta_size);
+                }
+
                 *ppMeta    = read_addr;
                 *pMetaSize = size;
             }
 
             if (NULL != ppExtraData && NULL != pExtraSize)
             {
-                *ppExtraData = shmem_buffer->extra_buf
-                        + (lread_index) * (*shmem_buffer->extra_size);
+               *ppExtraData = shmem_buffer->extra_buf;
+                if (lread_index >= INT_MAX || (*shmem_buffer->extra_size) >= INT_MAX)
+                    *ppExtraData += INT_MAX;
+                else
+                {
+                   if ((lread_index) * (*shmem_buffer->extra_size) >= INT_MAX)
+                        *ppExtraData += INT_MAX;
+                   else
+                        *ppExtraData += (lread_index) * *(shmem_buffer->extra_size);
+                }
                 *pExtraSize = *shmem_buffer->extra_size;
             }
         }
@@ -468,26 +575,39 @@ SHMEM_STATUS_T _WriteShmem(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSi
 
     //Once the writer writes the last buffer, it is made to point to the first
     //buffer again
-    if (lwrite_index == (unit_num - 1))
+    if (unit_num < INT_MAX && unit_num - 1 < INT_MAX)
     {
-        DEBUG_PRINT("Overflow write data(read index = %d, write_index = %d, unit_num = %d)!\n",
-                    lread_index, lwrite_index, *shmem_buffer->unit_num);
-        //*shmem_buffer->mark = (*shmem_buffer->mark) | SHMEM_COMM_MARK_RESET;
-        *shmem_buffer->write_index = 0;
-
-        resetShmem(shmem_buffer);
-        unlockShmem(shmem_buffer);
-        return SHMEM_COMM_OVERFLOW;
+       if (lwrite_index == (unit_num - 1))
+       {
+           //*shmem_buffer->mark = (*shmem_buffer->mark) | SHMEM_COMM_MARK_RESET;
+           *shmem_buffer->write_index = 0;
+           resetShmem(shmem_buffer);
+           unlockShmem(shmem_buffer);
+           return SHMEM_COMM_OVERFLOW;
+       }
     }
-
     *(int *) (shmem_buffer->length_buf + lwrite_index) = dataSize;
-    memcpy(shmem_buffer->data_buf + lwrite_index * (*shmem_buffer->unit_size), pData, dataSize);
-
+    if (lwrite_index >= INT_MAX || (*shmem_buffer->unit_size) >= INT_MAX)
+        memcpy(shmem_buffer->data_buf + INT_MAX, pData, dataSize);
+    else
+    {
+       if (lwrite_index * (*shmem_buffer->unit_size) >= INT_MAX)
+           memcpy(shmem_buffer->data_buf + INT_MAX, pData, dataSize);
+       else
+           memcpy(shmem_buffer->data_buf + lwrite_index * (*shmem_buffer->unit_size), pData, dataSize);
+    }
     if (metaSize < meta_size)
     {
         *(int *)(shmem_buffer->length_meta + lwrite_index) = metaSize;
-        memcpy(shmem_buffer->data_meta + lwrite_index * (*shmem_buffer->meta_size), pMeta,
-               metaSize);
+        if (lwrite_index >= INT_MAX || (*shmem_buffer->meta_size) >= INT_MAX)
+            memcpy(shmem_buffer->data_meta + INT_MAX, pMeta, metaSize);
+        else
+        {
+            if (lwrite_index * (*shmem_buffer->meta_size) >= INT_MAX)
+                memcpy(shmem_buffer->data_meta + INT_MAX, pMeta, metaSize);
+            else
+                memcpy(shmem_buffer->data_meta + lwrite_index * (*shmem_buffer->meta_size), pMeta,metaSize);
+        }
     }
 
     if (NULL != pExtraData && extraDataSize > 0)
@@ -532,8 +652,6 @@ SHMEM_STATUS_T CloseShmem(SHMEM_HANDLE *phShmem)
 
     if (shmctl(shmem_buffer->shmem_id, IPC_STAT, &shm_stat) != -1)
     {
-        DEBUG_PRINT("shm_stat.shm_nattch=%d\n", (int)shm_stat.shm_nattch);
-
         if (shm_stat.shm_nattch == 0)
         {
             DEBUG_PRINT("This is the only attached client\n");

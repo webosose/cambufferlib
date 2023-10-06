@@ -16,6 +16,7 @@
 
 #include "shmem_systemv.h"
 #include "camshm.h"
+#include <climits>
 
 namespace camera {
 
@@ -68,10 +69,17 @@ bool SystemvSharedMemory::ReadData(uint8_t** buffer, int* len) {
 }
 
 bool SystemvSharedMemory::WriteData(uint8_t* buffer, size_t len) {
-    int status = SHMEM_COMM_FAIL;
-    if (phShmem_)
-        status = WriteShmem(phShmem_, buffer, len, nullptr, 0);
-    return status == SHMEM_COMM_OK;
-}
+    SHMEM_STATUS_T status = SHMEM_COMM_FAIL;
 
+    if (phShmem_)
+    {
+      if (len <= INT_MAX)
+          status = WriteShmem(phShmem_, buffer, len, nullptr, 0);
+    }
+
+    if(status != SHMEM_COMM_OK)
+       return false;
+    return true;
+
+}
 } // namespace camera
