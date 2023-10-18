@@ -247,15 +247,9 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
     }
     size_t length_buf_offset = sizeof(int) * 6;
 
-    size_t data_buf_offset = SHMEM_HEADER_SIZE;
+    size_t data_buf_offset = 0;
     if ((*pShmemBuffer->unit_num) >= 0)
-        data_buf_offset += (SHMEM_LENGTH_SIZE);
-    else{
-        if(data_buf_offset < ULONG_MAX && (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) < ULONG_MAX)
-            data_buf_offset += (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
-        else
-            data_buf_offset += (SHMEM_LENGTH_SIZE);
-    }
+        data_buf_offset = SHMEM_HEADER_SIZE + (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
 
     size_t length_meta_offset = 0;
     if ((*pShmemBuffer->unit_size) >= 0)
