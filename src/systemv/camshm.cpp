@@ -428,14 +428,10 @@ SHMEM_STATUS_T _ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSiz
                 }
                 else
                 {
-                 if(*shmem_buffer->unit_num >= INT_MAX)
-                    lread_index = INT_MAX;
-
-                 if(*shmem_buffer->unit_num - 1 >= INT_MAX)
-                    lread_index = INT_MAX;
-
-                 else
-                    lread_index = *shmem_buffer->unit_num - 1;
+                    if (*shmem_buffer->unit_num > INT_MIN + 1)
+                    {
+                        lread_index = *shmem_buffer->unit_num - 1;
+                    }
                 }
             }
             else

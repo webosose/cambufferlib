@@ -173,22 +173,17 @@ SHMEM_STATUS_T _ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int 
         {
             if (*shmem_buffer->write_index == 0)
             {
-                if (0 == first_read)
+                if (first_read == false)
                 {
                     first_read = true;
                     continue;
                 }
                 else
                 {
-                   if ((*shmem_buffer->unit_num) >= INT_MAX)
-                        lread_index += INT_MAX;
-                   else
-                   {
-                      if ((*shmem_buffer->unit_num) - 1 >= INT_MAX)
-                           lread_index += INT_MAX;
-                      else
-                           lread_index =  (*shmem_buffer->unit_num) - 1;
-                   }
+                    if (*shmem_buffer->unit_num > INT_MIN + 1)
+                    {
+                        lread_index = *shmem_buffer->unit_num - 1;
+                    }
                 }
             }
             else
