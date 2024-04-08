@@ -42,19 +42,19 @@
 #include <climits>
 #include "cam_posixshm.h"
 
-SHMEM_STATUS_T _OpenPosixShmem(SHMEM_HANDLE *phShmem, int fd, int unitSize, int unitNum,
+SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int fd, int unitSize, int unitNum,
         int extraSize, int nOpenMode);
-SHMEM_STATUS_T _ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
         unsigned char **ppExtraData, int *pExtraSize, int readMode);
 
 // API functions
 
 extern SHMEM_STATUS_T OpenPosixShmem(SHMEM_HANDLE *phShmem, int fd)
 {
-    return _OpenPosixShmem(phShmem, fd, 0, 0, 0, MODE_OPEN);
+    return openPosixShmemImpl(phShmem, fd, 0, 0, 0, MODE_OPEN);
 }
 
-SHMEM_STATUS_T _OpenPosixShmem(SHMEM_HANDLE *phShmem, int shmfd, int unitSize, int unitNum,
+SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int shmfd, int unitSize, int unitNum,
         int extraSize, int nOpenMode)
 {
     SHMEM_COMM_T *pShmemBuffer;
@@ -130,27 +130,27 @@ SHMEM_STATUS_T _OpenPosixShmem(SHMEM_HANDLE *phShmem, int shmfd, int unitSize, i
 
 SHMEM_STATUS_T ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize)
 {
-    return _ReadPosixShmem(hShmem, ppData, pSize, NULL, NULL, READ_FIRST);
+    return readPosixShmemImpl(hShmem, ppData, pSize, NULL, NULL, READ_FIRST);
 }
 
 SHMEM_STATUS_T ReadLastPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize)
 {
-    return _ReadPosixShmem(hShmem, ppData, pSize, NULL, NULL, READ_LAST);
+    return readPosixShmemImpl(hShmem, ppData, pSize, NULL, NULL, READ_LAST);
 }
 
 SHMEM_STATUS_T ReadPosixShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
         unsigned char **ppExtraData, int *pExtraSize)
 {
-    return _ReadPosixShmem(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_FIRST);
+    return readPosixShmemImpl(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_FIRST);
 }
 
 SHMEM_STATUS_T ReadLastPosixShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
         unsigned char **ppExtraData, int *pExtraSize)
 {
-    return _ReadPosixShmem(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_LAST);
+    return readPosixShmemImpl(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_LAST);
 }
 
-SHMEM_STATUS_T _ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
         unsigned char **ppExtraData, int *pExtraSize, int readMode)
 {
     SHMEM_COMM_T *shmem_buffer = (SHMEM_COMM_T *) hShmem;

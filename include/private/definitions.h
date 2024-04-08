@@ -14,10 +14,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef _UTILS_CAM_SHM_DEFINITIONS_
-#define _UTILS_CAM_SHM_DEFINITIONS_
+#ifndef UTILS_CAM_SHM_DEFINITIONS_
+#define UTILS_CAM_SHM_DEFINITIONS_
 
-typedef enum _SHMEM_STATUS_T {
+typedef enum SHMEM_STATUS_T_ {
   SHMEM_COMM_OK = 0x0,
   SHMEM_COMM_FAIL = -1,
   SHMEM_COMM_OVERFLOW = -2,
@@ -44,7 +44,7 @@ enum { READ_FIRST, READ_LAST };
 
 // structure define
 
-typedef enum _SHMEM_MARK_T {
+typedef enum SHMEM_MARK_T_ {
   SHMEM_COMM_MARK_NORMAL = 0x0,
   SHMEM_COMM_MARK_RESET = 0x1,
   SHMEM_COMM_MARK_TERMINATE = 0x2
@@ -118,7 +118,7 @@ typedef enum _SHMEM_MARK_T {
 //         LENGTH(sizeof(int) * unit_num) + DATA(meta_size * unit_num) +
 //         EXTRA_SZ(sizeof(int)) + EXTRA_BUF(extra_size * unit_num))
 
-typedef struct _SHMEM_COMM_T {
+typedef struct SHMEM_COMM_T_ {
   int shmem_id;
   int sema_id;
 

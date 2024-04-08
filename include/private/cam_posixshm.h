@@ -26,7 +26,6 @@ extern SHMEM_STATUS_T ReadPosixShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppDa
 extern SHMEM_STATUS_T ReadPosixLastShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize);
 extern SHMEM_STATUS_T ReadPosixLastShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData,
                                           int *pSize, unsigned char **ppExtraData, int *pExtraSize);
-extern SHMEM_STATUS_T ClosePosixShmem(SHMEM_HANDLE *phShmem);
 extern SHMEM_STATUS_T ClosePosixShmem(SHMEM_HANDLE *phShmem, const int unitSize, const int units,
                       const int extraSize, const char* shmname, const int shmfd);
 

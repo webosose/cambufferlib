@@ -24,13 +24,16 @@ namespace camera {
 class SystemvSharedMemory : public ISharedMemory {
 public:
     SystemvSharedMemory() = default;
-    virtual ~SystemvSharedMemory() { Close(); }
+    virtual ~SystemvSharedMemory() { closeImpl(); }
 
     virtual bool Open(key_t shmemKey);
     virtual bool Create(key_t* shmemKey, const int unitSize, const int units);
-    virtual bool Close();
+    virtual bool Close() { return closeImpl(); }
     virtual bool ReadData(uint8_t** buffer, int* len);
     virtual bool WriteData(uint8_t* buffer, const size_t len);
+
+private:
+    bool closeImpl();
 };
 
 } // namespace camera

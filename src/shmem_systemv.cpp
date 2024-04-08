@@ -46,7 +46,7 @@ bool SystemvSharedMemory::Create(key_t* shmemKey, const int unitSize, const int 
     return true;
 }
 
-bool SystemvSharedMemory::Close() {
+bool SystemvSharedMemory::closeImpl() {
     int status = SHMEM_COMM_OK;
     if (phShmem_)
         status = CloseShmem(&phShmem_);

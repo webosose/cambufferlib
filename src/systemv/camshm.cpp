@@ -39,12 +39,12 @@ union semun {
   struct seminfo *__buf;
 };
 
-SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize, int metaSize,
+SHMEM_STATUS_T openShmemImpl(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize, int metaSize,
                           int unitNum, int extraSize, int nOpenMode);
-SHMEM_STATUS_T _ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+SHMEM_STATUS_T readShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
                           unsigned char **ppMeta, int *pMetaSize, unsigned char **ppExtraData,
                           int *pExtraSize, int readMode);
-SHMEM_STATUS_T _WriteShmem(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
+SHMEM_STATUS_T writeShmemImpl(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
                            unsigned char *pMeta, int metaSize, unsigned char *pExtraData,
                            int extraDataSize);
 
@@ -135,21 +135,21 @@ int increseReadIndex(SHMEM_COMM_T *pShmem_buffer, int lread_index)
 SHMEM_STATUS_T CreateShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize, int metaSize,
                            int unitNum)
 {
-    return _OpenShmem(phShmem, pShmemKey, unitSize, metaSize, unitNum, 0, MODE_CREATE);
+    return openShmemImpl(phShmem, pShmemKey, unitSize, metaSize, unitNum, 0, MODE_CREATE);
 }
 
 SHMEM_STATUS_T CreateShmemEx(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize, int metaSize,
                              int unitNum, int extraSize)
 {
-    return _OpenShmem(phShmem, pShmemKey, unitSize, metaSize, unitNum, extraSize, MODE_CREATE);
+    return openShmemImpl(phShmem, pShmemKey, unitSize, metaSize, unitNum, extraSize, MODE_CREATE);
 }
 
 extern SHMEM_STATUS_T OpenShmem(SHMEM_HANDLE *phShmem, key_t shmemKey)
 {
-    return _OpenShmem(phShmem, &shmemKey, 0, 0, 0, 0, MODE_OPEN);
+    return openShmemImpl(phShmem, &shmemKey, 0, 0, 0, 0, MODE_OPEN);
 }
 
-SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize, int metaSize,
+SHMEM_STATUS_T openShmemImpl(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize, int metaSize,
                           int unitNum, int extraSize, int nOpenMode)
 {
     SHMEM_COMM_T *pShmemBuffer;
@@ -368,20 +368,20 @@ SHMEM_STATUS_T _OpenShmem(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSize,
 SHMEM_STATUS_T ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
                          unsigned char **ppMeta, int *pMetaSize)
 {
-    return _ReadShmem(hShmem, ppData, pSize, ppMeta, pMetaSize, NULL, NULL, READ_FIRST);
+    return readShmemImpl(hShmem, ppData, pSize, ppMeta, pMetaSize, NULL, NULL, READ_FIRST);
 }
 
 SHMEM_STATUS_T ReadLastShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
                              unsigned char **ppMeta, int *pMetaSize)
 {
-    return _ReadShmem(hShmem, ppData, pSize, ppMeta, pMetaSize, NULL, NULL, READ_LAST);
+    return readShmemImpl(hShmem, ppData, pSize, ppMeta, pMetaSize, NULL, NULL, READ_LAST);
 }
 
 SHMEM_STATUS_T ReadShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
                            unsigned char **ppMeta, int *pMetaSize, unsigned char **ppExtraData,
                            int *pExtraSize)
 {
-    return _ReadShmem(hShmem, ppData, pSize, ppMeta, pMetaSize, ppExtraData, pExtraSize,
+    return readShmemImpl(hShmem, ppData, pSize, ppMeta, pMetaSize, ppExtraData, pExtraSize,
                       READ_FIRST);
 }
 
@@ -389,10 +389,10 @@ SHMEM_STATUS_T ReadLastShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int 
                                unsigned char **ppMeta, int *pMetaSize, unsigned char **ppExtraData,
                                int *pExtraSize)
 {
-    return _ReadShmem(hShmem, ppData, pSize, ppMeta, pMetaSize, ppExtraData, pExtraSize, READ_LAST);
+    return readShmemImpl(hShmem, ppData, pSize, ppMeta, pMetaSize, ppExtraData, pExtraSize, READ_LAST);
 }
 
-SHMEM_STATUS_T _ReadShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+SHMEM_STATUS_T readShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
                           unsigned char **ppMeta, int *pMetaSize, unsigned char **ppExtraData,
                           int *pExtraSize, int readMode)
 {
@@ -503,16 +503,16 @@ SHMEM_STATUS_T WriteShmemEx(SHMEM_HANDLE hShmem, unsigned char *pData, int dataS
                             unsigned char *pMeta, int metaSize, unsigned char *pExtraData,
                             int extraDataSize)
 {
-    return _WriteShmem(hShmem, pData, dataSize, pMeta, metaSize, pExtraData, extraDataSize);
+    return writeShmemImpl(hShmem, pData, dataSize, pMeta, metaSize, pExtraData, extraDataSize);
 }
 
 SHMEM_STATUS_T WriteShmem(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
                           unsigned char *pMeta, int metaSize)
 {
-    return _WriteShmem(hShmem, pData, dataSize, pMeta, metaSize, NULL, 0);
+    return writeShmemImpl(hShmem, pData, dataSize, pMeta, metaSize, NULL, 0);
 }
 
-SHMEM_STATUS_T _WriteShmem(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
+SHMEM_STATUS_T writeShmemImpl(SHMEM_HANDLE hShmem, unsigned char *pData, int dataSize,
                            unsigned char *pMeta, int metaSize, unsigned char *pExtraData,
                            int extraDataSize)
 {

@@ -36,7 +36,7 @@ bool PosixSharedMemory::Create(key_t* shmemKey, const int unitSize, const int un
     return false;
 }
 
-bool PosixSharedMemory::Close() {
+bool PosixSharedMemory::closeImpl() {
     int status = SHMEM_COMM_OK;
     if (phShmem_)
         status = ClosePosixShmem(&phShmem_, unitSize_, units_, extraSize_, name_.c_str(), shmKey_ /* fd */);
