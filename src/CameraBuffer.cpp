@@ -14,10 +14,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#define LOG_TAG "CameraBuffer"
 #include "CameraBuffer.h"
 #include "ISharedMemory.h"
 #include "shmem_posix.h"
 #include "shmem_systemv.h"
+#include "camera_log.h"
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
@@ -25,6 +27,7 @@
 namespace camera {
 
 CameraBuffer::CameraBuffer(InterfaceType type) {
+    PLOGI("");
     switch (type) {
         case SHMEM_POSIX:
             shared_memory_ = new PosixSharedMemory();
@@ -37,6 +40,7 @@ CameraBuffer::CameraBuffer(InterfaceType type) {
 }
 
 CameraBuffer::~CameraBuffer() {
+    PLOGI("");
     if (shared_memory_) {
         delete shared_memory_;
         shared_memory_ = nullptr;
@@ -44,6 +48,7 @@ CameraBuffer::~CameraBuffer() {
 }
 
 bool CameraBuffer::Open(key_t shmemKey) {
+    PLOGI("");
     if (isInitialized_)
         return true;
     if (shared_memory_)
@@ -52,6 +57,7 @@ bool CameraBuffer::Open(key_t shmemKey) {
 }
 
 bool CameraBuffer::Create(key_t* shmemKey, const int unitSize, const int units) {
+    PLOGI("");
     if (isInitialized_)
         return true;
     if (shared_memory_)
@@ -60,6 +66,7 @@ bool CameraBuffer::Create(key_t* shmemKey, const int unitSize, const int units) 
 }
 
 bool CameraBuffer::Close() {
+    PLOGI("");
     if (!isInitialized_)
         return false;
     bool status = false;

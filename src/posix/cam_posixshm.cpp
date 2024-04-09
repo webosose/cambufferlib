@@ -14,6 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#define LOG_TAG "posixshm"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -41,6 +42,7 @@
 #include <assert.h>
 #include <climits>
 #include "cam_posixshm.h"
+#include "camera_log.h"
 
 SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int fd, int unitSize, int unitNum,
         int extraSize, int nOpenMode);
@@ -65,25 +67,25 @@ SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int shmfd, int unitSize
     *phShmem = (SHMEM_HANDLE) malloc(sizeof(SHMEM_COMM_T));
     pShmemBuffer = (SHMEM_COMM_T *) *phShmem;
     if (pShmemBuffer == NULL) {
-        DEBUG_PRINT("failed creating memory for handle");
+        PLOGE("failed creating memory for handle");
         return SHMEM_COMM_FAIL;
     }
 
     if( fstat (shmfd , &sb) == -1)
     {
-        DEBUG_PRINT("Failed to get size of shared memory \n");
+        PLOGE("Failed to get size of shared memory");
         return SHMEM_COMM_FAIL;
     }
     if (sb.st_size > 0)
         shmemSize = sb.st_size;
     if (shmemSize > 0)
-        DEBUG_PRINT("shared memory opened successfully!\n");
+        PLOGI("shared memory opened successfully!");
     else
         return SHMEM_COMM_FAIL;
     pSharedmem = (unsigned char *)mmap(0, shmemSize, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
     if(pSharedmem == MAP_FAILED || pSharedmem == NULL)
     {
-        DEBUG_PRINT("mmap failed \n");
+        PLOGE("mmap failed ");
         return SHMEM_COMM_FAIL;
     }
 
@@ -124,7 +126,7 @@ SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int shmfd, int unitSize
     //started to write yet
     *pShmemBuffer->write_index = -1;
     *pShmemBuffer->read_index  = -1;
-    DEBUG_PRINT("shared memory opened successfully!\n");
+    PLOGI("shared memory opened successfully!");
     return SHMEM_COMM_OK;
 }
 
@@ -162,7 +164,7 @@ SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, i
     first_read = false;
     if (!shmem_buffer)
     {
-        DEBUG_PRINT("shmem buffer is NULL");
+        PLOGE("shmem buffer is NULL");
         return SHMEM_COMM_FAIL;
     }
     lread_index = (*shmem_buffer->write_index);
@@ -194,7 +196,7 @@ SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, i
 
             if ((size == 0) || (size > *shmem_buffer->unit_size))
             {
-                DEBUG_PRINT("size error(%d)!\n", size);
+                PLOGE("size error(%d)!", size);
                 return SHMEM_COMM_FAIL;
             }
             read_addr = shmem_buffer->data_buf;
@@ -245,7 +247,7 @@ SHMEM_STATUS_T ClosePosixShmem(SHMEM_HANDLE *phShmem, \
     shmem_buffer = (SHMEM_COMM_T *)*phShmem;
 
     if (!shmem_buffer) {
-      DEBUG_PRINT("shmem_bufer is NULL\n");
+      PLOGE("shmem_bufer is NULL");
       return SHMEM_COMM_FAIL;
     }
     if (unitSize < 0){

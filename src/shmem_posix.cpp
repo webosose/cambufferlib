@@ -13,14 +13,16 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
-#include <iostream>
 
+#define LOG_TAG "PosixSharedMemory"
 #include "shmem_posix.h"
 #include "cam_posixshm.h"
+#include "camera_log.h"
 
 namespace camera {
 
 bool PosixSharedMemory::Open(key_t fd) {
+    PLOGI("");
     if (phShmem_)
         return true;
 
@@ -32,11 +34,12 @@ bool PosixSharedMemory::Open(key_t fd) {
 }
 
 bool PosixSharedMemory::Create(key_t* shmemKey, const int unitSize, const int units) {
-    std::cerr << "posix shmem Create() is not yet implemented" << std::endl;
+    PLOGW("posix shmem Create() is not yet implemented");
     return false;
 }
 
 bool PosixSharedMemory::closeImpl() {
+    PLOGI("");
     int status = SHMEM_COMM_OK;
     if (phShmem_)
         status = ClosePosixShmem(&phShmem_, unitSize_, units_, extraSize_, name_.c_str(), shmKey_ /* fd */);
@@ -59,7 +62,7 @@ bool PosixSharedMemory::ReadData(uint8_t** buffer, int* len) {
 }
 
 bool PosixSharedMemory::WriteData(uint8_t* buffer, size_t len) {
-    std::cerr << "posix shmem WriteData() is not yet implemented" << std::endl;
+    PLOGW("posix shmem WriteData() is not yet implemented");
     return false;
 }
 

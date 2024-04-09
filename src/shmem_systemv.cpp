@@ -14,13 +14,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#define LOG_TAG "SystemvSharedMemory"
 #include "shmem_systemv.h"
 #include "camshm.h"
+#include "camera_log.h"
 #include <climits>
 
 namespace camera {
 
 bool SystemvSharedMemory::Open(key_t shmemKey) {
+    PLOGI("");
     if (phShmem_)
         return true;
 
@@ -34,6 +37,7 @@ bool SystemvSharedMemory::Open(key_t shmemKey) {
 }
 
 bool SystemvSharedMemory::Create(key_t* shmemKey, const int unitSize, const int units) {
+    PLOGI("");
     if (shmemKey == nullptr)
         return false;
     if (phShmem_)
@@ -47,6 +51,7 @@ bool SystemvSharedMemory::Create(key_t* shmemKey, const int unitSize, const int 
 }
 
 bool SystemvSharedMemory::closeImpl() {
+    PLOGI("");
     int status = SHMEM_COMM_OK;
     if (phShmem_)
         status = CloseShmem(&phShmem_);

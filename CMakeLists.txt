@@ -26,6 +26,9 @@ option(TEST_APP "Generates a standalone app to test the library" OFF)
 
 find_package(PkgConfig REQUIRED)
 
+pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
+include_directories(${PMLOGLIB_INCLUDE_DIRS})
+
 include_directories(include/public)
 include_directories(include/private)
 

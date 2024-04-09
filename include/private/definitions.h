@@ -28,13 +28,6 @@ typedef enum SHMEM_STATUS_T_ {
 
 typedef void* SHMEM_HANDLE;
 
-#ifdef SHMEM_COMM_DEBUG
-#define DEBUG_PRINT(fmt, args...)                                              \
-  printf("\x1b[1;40;32m[SHM_API:%s] " fmt "\x1b[0m\r\n", __FUNCTION__, ##args)
-#else
-#define DEBUG_PRINT(fmt, args...)
-#endif
-
 #define SHMEM_HEADER_SIZE (6 * sizeof(int))
 #define SHMEM_LENGTH_SIZE sizeof(int)
 
