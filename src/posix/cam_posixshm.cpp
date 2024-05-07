@@ -51,9 +51,65 @@ SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, i
 
 // API functions
 
-extern SHMEM_STATUS_T OpenPosixShmem(SHMEM_HANDLE *phShmem, int fd)
+SHMEM_STATUS_T OpenPosixShmem(SHMEM_HANDLE *phShmem, int fd)
 {
     return openPosixShmemImpl(phShmem, fd, 0, 0, 0, MODE_OPEN);
+}
+
+SHMEM_STATUS_T ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize)
+{
+    return readPosixShmemImpl(hShmem, ppData, pSize, NULL, NULL, READ_FIRST);
+}
+
+SHMEM_STATUS_T ReadPosixShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
+        unsigned char **ppExtraData, int *pExtraSize)
+{
+    return readPosixShmemImpl(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_FIRST);
+}
+
+SHMEM_STATUS_T ClosePosixShmem(SHMEM_HANDLE *phShmem, \
+                               const int unitSize, const int units, const int extraSize, \
+                               const char* shmname, const int shmfd)
+{
+    void *shmem_addr;
+    SHMEM_COMM_T *shmem_buffer;
+    int total_size = 0;
+    shmem_buffer = (SHMEM_COMM_T *)*phShmem;
+
+    if (!shmem_buffer) {
+      PLOGE("shmem_bufer is NULL");
+      return SHMEM_COMM_FAIL;
+    }
+    if (unitSize < 0){
+        int shmemSize  = SHMEM_HEADER_SIZE + sizeof(int);
+        if (units > 0)
+            shmemSize += (unitSize + SHMEM_LENGTH_SIZE) * units;
+        if (shmemSize < 0)
+            return SHMEM_COMM_FAIL;
+        if (shmemSize >= INT_MAX)
+            shmemSize = INT_MAX;
+        else
+        {
+          if (extraSize >= INT_MAX || units >= INT_MAX)
+              shmemSize = INT_MAX;
+          else
+              shmemSize += extraSize * units;
+        }
+        shmem_addr = shmem_buffer->write_index;
+        if (munmap(shmem_addr, shmemSize) == -1)
+            return SHMEM_COMM_FAIL;
+    }
+    else
+        return SHMEM_COMM_FAIL;
+
+    if (shm_unlink(shmname) == -1)
+        return SHMEM_COMM_FAIL;
+
+    close(shmfd);
+
+    free(shmem_buffer);
+    shmem_buffer = NULL;
+    return SHMEM_COMM_OK;
 }
 
 SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int shmfd, int unitSize, int unitNum,
@@ -128,28 +184,6 @@ SHMEM_STATUS_T openPosixShmemImpl(SHMEM_HANDLE *phShmem, int shmfd, int unitSize
     *pShmemBuffer->read_index  = -1;
     PLOGI("shared memory opened successfully!");
     return SHMEM_COMM_OK;
-}
-
-SHMEM_STATUS_T ReadPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize)
-{
-    return readPosixShmemImpl(hShmem, ppData, pSize, NULL, NULL, READ_FIRST);
-}
-
-SHMEM_STATUS_T ReadLastPosixShmem(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize)
-{
-    return readPosixShmemImpl(hShmem, ppData, pSize, NULL, NULL, READ_LAST);
-}
-
-SHMEM_STATUS_T ReadPosixShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
-        unsigned char **ppExtraData, int *pExtraSize)
-{
-    return readPosixShmemImpl(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_FIRST);
-}
-
-SHMEM_STATUS_T ReadLastPosixShmemEx(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
-        unsigned char **ppExtraData, int *pExtraSize)
-{
-    return readPosixShmemImpl(hShmem, ppData, pSize, ppExtraData, pExtraSize, READ_LAST);
 }
 
 SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, int *pSize,
@@ -234,50 +268,5 @@ SHMEM_STATUS_T readPosixShmemImpl(SHMEM_HANDLE hShmem, unsigned char **ppData, i
         break;
     } while (1);
 
-    return SHMEM_COMM_OK;
-}
-
-SHMEM_STATUS_T ClosePosixShmem(SHMEM_HANDLE *phShmem, \
-                               const int unitSize, const int units, const int extraSize, \
-                               const char* shmname, const int shmfd)
-{
-    void *shmem_addr;
-    SHMEM_COMM_T *shmem_buffer;
-    int total_size = 0;
-    shmem_buffer = (SHMEM_COMM_T *)*phShmem;
-
-    if (!shmem_buffer) {
-      PLOGE("shmem_bufer is NULL");
-      return SHMEM_COMM_FAIL;
-    }
-    if (unitSize < 0){
-        int shmemSize  = SHMEM_HEADER_SIZE + sizeof(int);
-        if (units > 0)
-            shmemSize += (unitSize + SHMEM_LENGTH_SIZE) * units;
-        if (shmemSize < 0)
-            return SHMEM_COMM_FAIL;
-        if (shmemSize >= INT_MAX)
-            shmemSize = INT_MAX;
-        else
-        {
-          if (extraSize >= INT_MAX || units >= INT_MAX)
-              shmemSize = INT_MAX;
-          else
-              shmemSize += extraSize * units;
-        }
-        shmem_addr = shmem_buffer->write_index;
-        if (munmap(shmem_addr, shmemSize) == -1)
-            return SHMEM_COMM_FAIL;
-    }
-    else
-        return SHMEM_COMM_FAIL;
-
-    if (shm_unlink(shmname) == -1)
-        return SHMEM_COMM_FAIL;
-
-    close(shmfd);
-
-    free(shmem_buffer);
-    shmem_buffer = NULL;
     return SHMEM_COMM_OK;
 }
