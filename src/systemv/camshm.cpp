@@ -251,25 +251,20 @@ SHMEM_STATUS_T openShmemImpl(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSi
         data_buf_offset = SHMEM_HEADER_SIZE + (SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num);
 
     size_t length_meta_offset = 0;
-    if ((*pShmemBuffer->unit_size) >= 0)
+    if ((*pShmemBuffer->unit_size) >= 0 && (*pShmemBuffer->unit_size) < ULONG_MAX)
     {
-     if ((*pShmemBuffer->unit_size) < ULONG_MAX || SHMEM_LENGTH_SIZE < ULONG_MAX)
-        {
-            if (length_meta_offset < ULONG_MAX && (*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE < ULONG_MAX)
-                length_meta_offset += ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE);
-            if (length_meta_offset < ULONG_MAX && (*pShmemBuffer->unit_num) < ULONG_MAX)
-                length_meta_offset *= (*pShmemBuffer->unit_num);
-            if (length_meta_offset < ULONG_MAX && SHMEM_HEADER_SIZE < ULONG_MAX)
-                length_meta_offset += SHMEM_HEADER_SIZE;
-
-        }
+        if (length_meta_offset < ULONG_MAX && (*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE < ULONG_MAX)
+            length_meta_offset += ((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE);
+        if (length_meta_offset < ULONG_MAX && (*pShmemBuffer->unit_num) < ULONG_MAX)
+            length_meta_offset *= (*pShmemBuffer->unit_num);
+        if (length_meta_offset < ULONG_MAX && SHMEM_HEADER_SIZE < ULONG_MAX)
+            length_meta_offset += SHMEM_HEADER_SIZE;
     }
 
     size_t data_meta_offset = 0;
 
-    if ((*pShmemBuffer->unit_size) >= ULONG_MAX || SHMEM_LENGTH_SIZE >= ULONG_MAX)
-        data_meta_offset += 0;
-    else{
+    if ((*pShmemBuffer->unit_size) >= 0 && (*pShmemBuffer->unit_size) < ULONG_MAX)
+    {
         if (((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) >= ULONG_MAX || (*pShmemBuffer->unit_num) >= ULONG_MAX)
         {
             if(((*pShmemBuffer->unit_size) + SHMEM_LENGTH_SIZE) * (*pShmemBuffer->unit_num) >= ULONG_MAX)
@@ -281,7 +276,7 @@ SHMEM_STATUS_T openShmemImpl(SHMEM_HANDLE *phShmem, key_t *pShmemKey, int unitSi
             }
         }
     }
-    if (SHMEM_LENGTH_SIZE < ULONG_MAX || (*pShmemBuffer->unit_num) < ULONG_MAX)
+    if ((*pShmemBuffer->unit_num) < ULONG_MAX)
     {
         if (data_meta_offset < ULONG_MAX && SHMEM_LENGTH_SIZE * (*pShmemBuffer->unit_num) < ULONG_MAX)
             data_meta_offset += SHMEM_LENGTH_SIZE * (*pShmemBuffer->unit_num);
