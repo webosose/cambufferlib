@@ -17,37 +17,43 @@
 #define LOG_TAG "CameraBuffer"
 #include "CameraBuffer.h"
 #include "ISharedMemory.h"
+#include "camera_log.h"
 #include "shmem_posix.h"
 #include "shmem_systemv.h"
-#include "camera_log.h"
 #include <errno.h>
-#include <unistd.h>
 #include <signal.h>
+#include <unistd.h>
 
-namespace camera {
+namespace camera
+{
 
-CameraBuffer::CameraBuffer(InterfaceType type) {
+CameraBuffer::CameraBuffer(InterfaceType type)
+{
     PLOGI("");
-    switch (type) {
-        case SHMEM_POSIX:
-            shared_memory_ = new PosixSharedMemory();
-         break;
-        case SHMEM_SYSTEMV:
-        default:
-            shared_memory_ = new SystemvSharedMemory();
+    switch (type)
+    {
+    case SHMEM_POSIX:
+        shared_memory_ = new PosixSharedMemory();
+        break;
+    case SHMEM_SYSTEMV:
+    default:
+        shared_memory_ = new SystemvSharedMemory();
         break;
     }
 }
 
-CameraBuffer::~CameraBuffer() {
+CameraBuffer::~CameraBuffer()
+{
     PLOGI("");
-    if (shared_memory_) {
+    if (shared_memory_)
+    {
         delete shared_memory_;
         shared_memory_ = nullptr;
     }
 }
 
-bool CameraBuffer::Open(key_t shmemKey) {
+bool CameraBuffer::Open(key_t shmemKey)
+{
     PLOGI("");
     if (isInitialized_)
         return true;
@@ -56,7 +62,8 @@ bool CameraBuffer::Open(key_t shmemKey) {
     return isInitialized_;
 }
 
-bool CameraBuffer::Create(key_t* shmemKey, const int unitSize, const int units) {
+bool CameraBuffer::Create(key_t *shmemKey, const int unitSize, const int units)
+{
     PLOGI("");
     if (isInitialized_)
         return true;
@@ -65,7 +72,8 @@ bool CameraBuffer::Create(key_t* shmemKey, const int unitSize, const int units) 
     return isInitialized_;
 }
 
-bool CameraBuffer::Close() {
+bool CameraBuffer::Close()
+{
     PLOGI("");
     if (!isInitialized_)
         return false;
@@ -77,7 +85,8 @@ bool CameraBuffer::Close() {
     return status;
 }
 
-bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
+bool CameraBuffer::ReadData(uint8_t **buffer, int *len)
+{
     if (!isInitialized_)
         return false;
 
@@ -96,23 +105,33 @@ bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
         return false;
 
     int wait_retry = 0;
-    struct timespec timeout {1, 0};
+    struct timespec timeout
+    {
+        1, 0
+    };
 
-    do {
+    do
+    {
         signum = sigtimedwait(&sigset, NULL, &timeout);
-        if (signum >= 0) {
+        if (signum >= 0)
+        {
             int read_retry = 0;
-            do {
+            do
+            {
                 if (shared_memory_->ReadData(buffer, len))
                     return true;
 
                 usleep(10000); // 10 ms delay
                 read_retry++;
             } while (read_retry <= 100);
-        } else if (signum == -1) {
-            //timeout
+        }
+        else if (signum == -1)
+        {
+            // timeout
             wait_retry++;
-        } else {
+        }
+        else
+        {
             break;
         }
     } while (wait_retry <= 10);
@@ -120,7 +139,8 @@ bool CameraBuffer::ReadData(uint8_t** buffer, int* len) {
     return true;
 }
 
-bool CameraBuffer::WriteData(uint8_t* buffer, const size_t len) {
+bool CameraBuffer::WriteData(uint8_t *buffer, const size_t len)
+{
     if (!isInitialized_)
         return false;
     if (shared_memory_)

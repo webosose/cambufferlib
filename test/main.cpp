@@ -18,8 +18,8 @@
 
 #ifdef ENABLE_OUTPUT
 #include <opencv2/core.hpp>
-#include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
 #endif
 
 #include "CameraBuffer.h"
@@ -37,38 +37,54 @@ using namespace camera;
 bool running = true;
 
 #ifdef ENABLE_OUTPUT
-class StreamStore : public cv::VideoWriter {
+class StreamStore : public cv::VideoWriter
+{
 public:
     StreamStore(const std::string &stream_path)
-      : fileStream_(stream_path), windowName_("PoseTracking") {
-        if(fileStream_.empty()) {
+        : fileStream_(stream_path), windowName_("PoseTracking")
+    {
+        if (fileStream_.empty())
+        {
             live_show_ = true;
             cv::namedWindow(windowName_, /* flag - AUTO_SIZE */ 1);
         }
         else
-           live_show_ = false;
+            live_show_ = false;
     }
-    ~StreamStore() { if(isOpened()) release(); }
+    ~StreamStore()
+    {
+        if (isOpened())
+            release();
+    }
 
-    bool writeOutput(cv::Mat &frame) {
-        if(isStorageEnabled()) {
-            if(!isOpened()) {
+    bool writeOutput(cv::Mat &frame)
+    {
+        if (isStorageEnabled())
+        {
+            if (!isOpened())
+            {
                 open(fileStream_, fourcc_, (double)fps_, frame.size());
                 cout << "opening output file " << fileStream_ << endl;
             }
-            if(isOpened()) {
+            if (isOpened())
+            {
                 write(frame);
             }
         }
-        else {
+        else
+        {
             cv::imshow(windowName_, frame);
         }
         return true;
     }
 
-    void configure(int fps, int fourcc) { fps_ = fps; fourcc_ = fourcc; };
+    void configure(int fps, int fourcc)
+    {
+        fps_    = fps;
+        fourcc_ = fourcc;
+    };
 
-    bool isStorageEnabled() const { return !live_show_;}
+    bool isStorageEnabled() const { return !live_show_; }
 
 private:
     std::string fileStream_;
@@ -82,8 +98,10 @@ private:
 #define DEFAULT_OUTPUT "output.avi"
 
 #ifdef __linux__
-void linux_signal_handler(int signal) {
-    switch(signal) {
+void linux_signal_handler(int signal)
+{
+    switch (signal)
+    {
     case SIGINT:
     case SIGKILL:
         running = false;
@@ -94,7 +112,8 @@ void linux_signal_handler(int signal) {
 }
 #endif
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
 #ifdef __linux__
     signal(SIGINT, linux_signal_handler);
     signal(SIGKILL, linux_signal_handler);
@@ -106,23 +125,40 @@ int main(int argc, char* argv[]) {
 
     CameraBuffer::InterfaceType type = CameraBuffer::SHMEM_POSIX;
 
-    int i = 0;
+    int i    = 0;
     char cmd = '\0';
-    while(i < argc) {
+    while (i < argc)
+    {
 #ifdef DEBUG
         cout << "processing input " << argv[i] << endl;
 #endif
         string arg = argv[i];
-        if(cmd == 'k') { cmd = 0; shmKey = atoi(arg.c_str()); }
-        if(cmd == 't') { cmd = 0; memType = arg; }
-        if(cmd == 'o') { cmd = 0; outputFile = arg; }
-        if(arg == "-k") cmd = 'k';
-        if(arg == "-t") cmd = 't';
-        if(arg == "-o") cmd = 'o';
+        if (cmd == 'k')
+        {
+            cmd    = 0;
+            shmKey = atoi(arg.c_str());
+        }
+        if (cmd == 't')
+        {
+            cmd     = 0;
+            memType = arg;
+        }
+        if (cmd == 'o')
+        {
+            cmd        = 0;
+            outputFile = arg;
+        }
+        if (arg == "-k")
+            cmd = 'k';
+        if (arg == "-t")
+            cmd = 't';
+        if (arg == "-o")
+            cmd = 'o';
         i++;
     }
 
-    if (shmKey <= 0) {
+    if (shmKey <= 0)
+    {
         cout << "Invalid key value passed" << shmKey << endl;
         return -1;
     }
@@ -131,7 +167,8 @@ int main(int argc, char* argv[]) {
         type = CameraBuffer::SHMEM_POSIX;
     else if (memType == "systemv")
         type = CameraBuffer::SHMEM_SYSTEMV;
-    else {
+    else
+    {
         cout << "Invalid memtype given " << memType << endl;
         return -1;
     }
@@ -141,37 +178,42 @@ int main(int argc, char* argv[]) {
     output.configure(30 /* fps */, output.fourcc('A', 'V', 'C', '1'));
 #endif
 
-    CameraBuffer* camera_buffer = nullptr;
+    CameraBuffer *camera_buffer = nullptr;
 
     camera_buffer = new CameraBuffer(type);
-    if (camera_buffer == nullptr) {
+    if (camera_buffer == nullptr)
+    {
         cout << "Failed to create camera buffer instance. Type: " << type << endl;
         return -1;
     }
 
-    if (!camera_buffer->Open(shmKey)) {
+    if (!camera_buffer->Open(shmKey))
+    {
         cout << "Failed to open shared memory for the given key " << shmKey << endl;
         return -1;
     }
 
-    do {
-        uint8_t* pBuf = nullptr;
-        int len = 0;
+    do
+    {
+        uint8_t *pBuf = nullptr;
+        int len       = 0;
 
 #ifdef DEBUG
         auto start = high_resolution_clock::now();
 #endif
-        if (!camera_buffer->ReadData(&pBuf, &len)) {
+        if (!camera_buffer->ReadData(&pBuf, &len))
+        {
             cout << "Error while reading data" << endl;
         }
 #ifdef DEBUG
-        auto stop = high_resolution_clock::now();
+        auto stop     = high_resolution_clock::now();
         auto duration = duration_cast<milliseconds>(stop - start);
         cout << "Time taken for ReadData() is " << duration.count() << " ms" << endl;
 #endif
 
         cout << "Read data size " << len << endl;
-        if (len <= 0) {
+        if (len <= 0)
+        {
             cout << "buffer is not obtained" << endl;
             continue;
         }
@@ -180,7 +222,7 @@ int main(int argc, char* argv[]) {
         frame = imdecode(frame, cv::IMREAD_COLOR);
         output.writeOutput(frame);
 #endif
-    }while (running);
+    } while (running);
 
     delete camera_buffer;
 

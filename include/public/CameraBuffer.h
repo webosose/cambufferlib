@@ -20,13 +20,16 @@
 #include <inttypes.h>
 #include <sys/shm.h>
 
-namespace camera {
+namespace camera
+{
 
 class ISharedMemory;
 
-class CameraBuffer {
+class CameraBuffer
+{
 public:
-    enum InterfaceType {
+    enum InterfaceType
+    {
         SHMEM_POSIX,
         SHMEM_SYSTEMV
     };
@@ -35,17 +38,17 @@ public:
     virtual ~CameraBuffer();
 
     bool Open(key_t shmemKey);
-    bool Create(key_t* shmemKey, const int unitSize, const int units);
+    bool Create(key_t *shmemKey, const int unitSize, const int units);
     bool Close();
-    bool ReadData(uint8_t** buffer, int* len);
-    bool WriteData(uint8_t* buffer, const size_t len);
+    bool ReadData(uint8_t **buffer, int *len);
+    bool WriteData(uint8_t *buffer, const size_t len);
 
 private:
-    CameraBuffer(const CameraBuffer&) = delete;
-    CameraBuffer& operator=(const CameraBuffer&) = delete;
+    CameraBuffer(const CameraBuffer &)            = delete;
+    CameraBuffer &operator=(const CameraBuffer &) = delete;
 
-    ISharedMemory* shared_memory_ = nullptr;
-    bool isInitialized_ = false;
+    ISharedMemory *shared_memory_ = nullptr;
+    bool isInitialized_           = false;
 };
 
 } // namespace camera
