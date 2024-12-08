@@ -16,136 +16,35 @@
 
 #define LOG_TAG "CameraBuffer"
 #include "CameraBuffer.h"
-#include "ISharedMemory.h"
+#include "CameraBufferImpl.h"
 #include "camera_log.h"
-#include "shmem_posix.h"
-#include "shmem_systemv.h"
-#include <errno.h>
-#include <signal.h>
-#include <unistd.h>
 
 namespace camera
 {
 
-CameraBuffer::CameraBuffer(InterfaceType type)
+CameraBuffer::CameraBuffer(const std::string &identifier)
 {
     PLOGI("");
-    switch (type)
-    {
-    case SHMEM_POSIX:
-        shared_memory_ = new PosixSharedMemory();
-        break;
-    case SHMEM_SYSTEMV:
-    default:
-        shared_memory_ = new SystemvSharedMemory();
-        break;
-    }
+    camera_buffer_impl_ = std::make_unique<CameraBufferImpl>(identifier);
 }
 
-CameraBuffer::~CameraBuffer()
-{
-    PLOGI("");
-    if (shared_memory_)
-    {
-        delete shared_memory_;
-        shared_memory_ = nullptr;
-    }
-}
+CameraBuffer::~CameraBuffer() { PLOGI(""); }
 
-bool CameraBuffer::Open(key_t shmemKey)
+bool CameraBuffer::Open(int handle)
 {
     PLOGI("");
-    if (isInitialized_)
-        return true;
-    if (shared_memory_)
-        isInitialized_ = shared_memory_->Open(shmemKey);
-    return isInitialized_;
-}
-
-bool CameraBuffer::Create(key_t *shmemKey, const int unitSize, const int units)
-{
-    PLOGI("");
-    if (isInitialized_)
-        return true;
-    if (shared_memory_)
-        isInitialized_ = shared_memory_->Create(shmemKey, unitSize, units);
-    return isInitialized_;
+    return camera_buffer_impl_->Open(handle);
 }
 
 bool CameraBuffer::Close()
 {
     PLOGI("");
-    if (!isInitialized_)
-        return false;
-    bool status = false;
-    if (shared_memory_)
-        status = shared_memory_->Close();
-
-    isInitialized_ = !status;
-    return status;
+    return camera_buffer_impl_->Close();
 }
 
-bool CameraBuffer::ReadData(uint8_t **buffer, int *len)
+bool CameraBuffer::ReadData(uint8_t **buffer, size_t *len)
 {
-    if (!isInitialized_)
-        return false;
-
-    if (len == nullptr)
-        return false;
-
-    // initialize the length parameter
-    *len = 0;
-
-    int signum;
-    sigset_t sigset;
-    sigemptyset(&sigset);
-    sigaddset(&sigset, SIGUSR1);
-
-    if (sigprocmask(SIG_SETMASK, &sigset, nullptr) == -1)
-        return false;
-
-    int wait_retry = 0;
-    struct timespec timeout
-    {
-        1, 0
-    };
-
-    do
-    {
-        signum = sigtimedwait(&sigset, NULL, &timeout);
-        if (signum >= 0)
-        {
-            int read_retry = 0;
-            do
-            {
-                if (shared_memory_->ReadData(buffer, len))
-                    return true;
-
-                usleep(10000); // 10 ms delay
-                read_retry++;
-            } while (read_retry <= 100);
-        }
-        else if (signum == -1)
-        {
-            // timeout
-            wait_retry++;
-        }
-        else
-        {
-            break;
-        }
-    } while (wait_retry <= 10);
-
-    return true;
-}
-
-bool CameraBuffer::WriteData(uint8_t *buffer, const size_t len)
-{
-    if (!isInitialized_)
-        return false;
-    if (shared_memory_)
-        return shared_memory_->WriteData(buffer, len);
-    return false;
+    return camera_buffer_impl_->ReadData(buffer, len);
 }
 
 } // namespace camera

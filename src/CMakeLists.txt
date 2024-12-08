@@ -16,17 +16,17 @@
 
 set(SRC_LIST
     CameraBuffer.cpp
-    shmem_posix.cpp
-    shmem_systemv.cpp
-    systemv/camshm.cpp
-    posix/cam_posixshm.cpp
+    CameraBufferImpl.cpp
     )
 
 file(GLOB PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include/public/*.h)
 
 add_library(${PROJECT_NAME} SHARED ${SRC_LIST})
 
-target_link_libraries(${PROJECT_NAME} rt)
+target_link_libraries(${PROJECT_NAME}
+                      rt
+                      camera_shared_memory
+                      luna_client)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES

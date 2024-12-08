@@ -18,6 +18,8 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project(CameraBuffer)
 
+set(CMAKE_CXX_STANDARD 17)
+
 if (NOT DEFINED ENV{PKG_CONFIG_PATH})
   set(ENV{PKG_CONFIG_PATH} ${WEBOS_INSTALL_ROOT}usr/share/pkgconfig)
 endif()
@@ -28,6 +30,9 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(PMLOGLIB REQUIRED PmLogLib)
 include_directories(${PMLOGLIB_INCLUDE_DIRS})
+
+pkg_check_modules(GLIB2 REQUIRED glib-2.0)
+include_directories(${GLIB2_INCLUDE_DIRS})
 
 include_directories(include/public)
 include_directories(include/private)

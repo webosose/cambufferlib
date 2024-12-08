@@ -18,37 +18,28 @@
 #define WEBOS_CAMERA_BUFFER_LIB_INTERFACE_H_
 
 #include <inttypes.h>
-#include <sys/shm.h>
+#include <memory>
 
 namespace camera
 {
 
-class ISharedMemory;
+class CameraBufferImpl;
 
 class CameraBuffer
 {
 public:
-    enum InterfaceType
-    {
-        SHMEM_POSIX,
-        SHMEM_SYSTEMV
-    };
-
-    CameraBuffer(InterfaceType type);
+    CameraBuffer(const std::string &identifier);
     virtual ~CameraBuffer();
 
-    bool Open(key_t shmemKey);
-    bool Create(key_t *shmemKey, const int unitSize, const int units);
+    bool Open(int handle);
     bool Close();
-    bool ReadData(uint8_t **buffer, int *len);
-    bool WriteData(uint8_t *buffer, const size_t len);
+    bool ReadData(uint8_t **buffer, size_t *len);
 
 private:
     CameraBuffer(const CameraBuffer &)            = delete;
     CameraBuffer &operator=(const CameraBuffer &) = delete;
 
-    ISharedMemory *shared_memory_ = nullptr;
-    bool isInitialized_           = false;
+    std::unique_ptr<CameraBufferImpl> camera_buffer_impl_{nullptr};
 };
 
 } // namespace camera

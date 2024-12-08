@@ -1,4 +1,4 @@
-// Copyright (c) 2022 LG Electronics, Inc.
+// Copyright (c) 2024 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,26 +14,33 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef WEBOS_SHARED_MEMEORY_POSIX_H_
-#define WEBOS_SHARED_MEMEORY_POSIX_H_
+#ifndef WEBOS_CAMERA_BUFFER_LIB_IMPL_H_
+#define WEBOS_CAMERA_BUFFER_LIB_IMPL_H_
 
-#include "ISharedMemory.h"
+#include <inttypes.h>
+#include <memory>
 
-namespace camera {
+class CameraSharedMemory;
+class LunaClient;
 
-class PosixSharedMemory : public ISharedMemory {
+namespace camera
+{
+
+class CameraBufferImpl
+{
 public:
-    PosixSharedMemory() = default;
-    virtual ~PosixSharedMemory() { closeImpl(); }
+    CameraBufferImpl(const std::string &identifier);
+    virtual ~CameraBufferImpl();
 
-    virtual bool Open(key_t shmemKey);
-    virtual bool Create(key_t* shmemKey, const int unitSize, const int units);
-    virtual bool Close() { return closeImpl(); }
-    virtual bool ReadData(uint8_t** buffer, int* len);
-    virtual bool WriteData(uint8_t* buffer, const size_t len);
+    bool Open(int handle);
+    bool Close();
+    bool ReadData(uint8_t **buffer, size_t *len);
 
 private:
-    bool closeImpl();
+    std::unique_ptr<CameraSharedMemory> shared_memory_{nullptr};
+    std::unique_ptr<LunaClient> luna_client_{nullptr};
+
+    bool getFd(const std::string &param, std::string &resp, int &fd);
 };
 
 } // namespace camera
