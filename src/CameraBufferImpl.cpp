@@ -16,10 +16,10 @@
 
 #define LOG_TAG "CameraBufferImpl"
 #include "CameraBufferImpl.h"
-#include "camera/camera_shared_memory.h"
-#include "camera/luna_client.h"
 #include "camera_log.h"
+#include "camera_shared_memory.h"
 #include "json_util.h"
+#include "luna_client.h"
 #include <random>
 
 namespace camera
